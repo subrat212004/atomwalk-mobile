@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "AW360 Patient",
+    "slug": "atomwalk-patient-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "android": {
+      "package": "com.atomwalk.patient",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F4A3A"
+      }
+    },
+    "extra": {
+      "apiBaseUrl": "http://192.168.0.230:8000/api/v1"
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}
