@@ -216,15 +216,20 @@ export function AppointmentsScreen() {
                   <View style={styles.compactActionsRow}>
                     {RESCHEDULABLE_STATUSES.includes(b.status) && (
                       <SecondaryButton
-                        label={hasUsableDoctorId(b.doctor_id) ? "Reschedule" : "Reschedule (Coming soon)"}
+                        label="Reschedule"
                         compact
-                        disabled={!hasUsableDoctorId(b.doctor_id)}
                         onPress={() =>
-                          hasUsableDoctorId(b.doctor_id) &&
                           navigation.navigate("Reschedule", {
                             bookingId: b.id,
                             tenantId: b.tenant_id,
-                            doctorId: b.doctor_id,
+                            // Reschedule itself (PortalRescheduleBookingView) is keyed
+                            // only on bookingId + the new date/time -- doctor_id is
+                            // never touched server-side. It's only used here to
+                            // *suggest* slots on the next screen, which already
+                            // degrades to "no slots configured, still reschedulable"
+                            // if this comes back wrong -- so unlike Book follow-up,
+                            // a bad doctor_id must never block this action.
+                            doctorId: b.doctor_id ?? 0,
                             doctorName: b.doctor,
                             hospitalName: b.hospital,
                             patientName: b.patient_name || "You",
