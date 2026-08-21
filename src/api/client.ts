@@ -63,14 +63,24 @@ api.interceptors.response.use(
 );
 
 /**
- * Standardized error message extraction — backend always returns {message}
- * on error. Also surfaces a plain (non-axios) Error's own message, so
- * device-side failures (e.g. "Sharing isn't available on this device.")
- * reach the user instead of collapsing into the generic fallback.
+ * Standardized error message extraction — most views return the standard
+ * {message} shape (core/response.py), but a chunk of
+ * apps/patients/portal_views.py (PortalBookView among them) predates that
+ * helper and hand-rolls Response({"error": "..."}, status=...) instead, same
+ * intent, different key. Without the .error fallback, every specific, real
+ * reason a booking/action failed (date in the past, slot just taken, hospital
+ * not enrolled for online booking, etc.) silently collapsed into the generic
+ * fallback message instead of reaching the user — mirrors the identical fix
+ * already applied on the web app's own error normaliser
+ * (frontend/src/services/api.client.js's normaliseError). Also surfaces a
+ * plain (non-axios) Error's own message, so device-side failures (e.g.
+ * "Sharing isn't available on this device.") reach the user instead of
+ * collapsing into the generic fallback.
  */
 export function apiErrorMessage(err: unknown, fallback = "Something went wrong. Please try again."): string {
   const e = err as AxiosError<any>;
   if (e?.response?.data?.message) return e.response.data.message;
+  if (e?.response?.data?.error) return e.response.data.error;
   if (err instanceof Error && !e?.isAxiosError && err.message) return err.message;
   return fallback;
 }

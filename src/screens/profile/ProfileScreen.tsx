@@ -11,6 +11,7 @@ import { TextField } from "@/components/TextField";
 import { DateField } from "@/components/DateField";
 import { SelectField } from "@/components/SelectField";
 import { MetalHero } from "@/components/MetalHero";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { GENDER_OPTIONS, RELATIONSHIP_OPTIONS } from "@/constants/options";
 import { NEUTRAL } from "@/theme/themes";
 import { useAppTheme } from "@/context/ThemeContext";
@@ -33,6 +34,18 @@ export function ProfileScreen() {
   const [editing, setEditing] = useState(false);
   const [showPhotoSheet, setShowPhotoSheet] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [signOutConfirmVisible, setSignOutConfirmVisible] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  const onSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await logout();
+    } finally {
+      setSigningOut(false);
+      setSignOutConfirmVisible(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -264,7 +277,19 @@ export function ProfileScreen() {
         </Text>
       </Card>
 
-      <SecondaryButton label="Sign out" onPress={logout} danger style={{ marginTop: 6 }} />
+      <SecondaryButton label="Sign out" onPress={() => setSignOutConfirmVisible(true)} danger style={{ marginTop: 6 }} />
+
+      <ConfirmDialog
+        visible={signOutConfirmVisible}
+        danger
+        title="Sign out?"
+        message="You'll need to sign in again to view your appointments and records."
+        confirmLabel="Sign out"
+        cancelLabel="Stay signed in"
+        loading={signingOut}
+        onConfirm={onSignOut}
+        onCancel={() => setSignOutConfirmVisible(false)}
+      />
     </Screen>
   );
 }
