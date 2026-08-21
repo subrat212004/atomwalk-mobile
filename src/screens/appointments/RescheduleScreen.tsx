@@ -86,7 +86,7 @@ export function RescheduleScreen() {
       {slotsLoading ? (
         <Text style={styles.slotsLoading}>Loading slots…</Text>
       ) : slots.length === 0 ? (
-        <EmptyState text="No slots configured for this day — you can still reschedule and get the next queue token." />
+        <EmptyState text="No slots configured for this day — try a different date." />
       ) : (
         <View style={styles.slotGrid}>
           {slots.map((s) => {
@@ -111,7 +111,13 @@ export function RescheduleScreen() {
         </View>
       )}
 
-      <PrimaryButton label="Confirm new time" onPress={onConfirm} loading={saving} style={{ marginTop: 16 }} />
+      <PrimaryButton
+        label={selectedTime ? "Confirm new time" : "Pick a slot to continue"}
+        disabled={!selectedTime}
+        onPress={onConfirm}
+        loading={saving}
+        style={{ marginTop: 16 }}
+      />
 
       <MessageDialog
         visible={done}

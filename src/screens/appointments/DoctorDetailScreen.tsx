@@ -94,7 +94,7 @@ export function DoctorDetailScreen() {
             {slotsLoading ? (
               <Text style={styles.slotsLoading}>Loading slots…</Text>
             ) : slots.length === 0 ? (
-              <EmptyState text="No slots configured for this day — you can still book and get the next queue token." />
+              <EmptyState text="No slots configured for this day — try a different date." />
             ) : (
               <View style={styles.slotGrid}>
                 {slots.map((s) => {
@@ -121,7 +121,8 @@ export function DoctorDetailScreen() {
           </View>
 
           <PrimaryButton
-            label="Book appointment"
+            label={selectedTime ? "Book appointment" : "Pick a slot to continue"}
+            disabled={!selectedTime}
             style={{ alignSelf: "stretch" }}
             onPress={() =>
               navigation.navigate("ConfirmBooking", {
