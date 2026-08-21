@@ -1,8 +1,6 @@
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
-  ForgotPassword: undefined;
-  ResetPassword: { mobile: string; devOtp?: string; otpMessage?: string };
 };
 
 export type AppTabsParamList = {

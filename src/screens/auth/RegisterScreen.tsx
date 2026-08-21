@@ -15,8 +15,12 @@ import { AuthStackParamList } from "@/navigation/types";
 
 // Ordered as a real signup should be: identity first, then prove the email
 // is really yours (OTP), then set the password last — not a single page
-// with password sitting next to unverified fields. "password" is skipped
-// straight from "details" only when no email was given (nothing to verify).
+// with password sitting next to unverified fields. Email is mandatory
+// (not just "recommended") because the backend's registration OTP purpose
+// only accepts an email identifier — there's no mobile-OTP path (that
+// needs a paid SMS gateway that isn't wired up yet, see
+// apps/auth_app/otp_views.py) — so there is no account-creation path that
+// skips verification.
 type Step = "details" | "otp" | "password";
 
 export function RegisterScreen() {
@@ -30,33 +34,23 @@ export function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [otp, setOtp] = useState("");
+  // Proof the OTP step actually succeeded — PortalRegisterView requires
+  // this and derives the account's email from it directly, not from
+  // anything sent in the final register call.
+  const [actionToken, setActionToken] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  // Only ever populated when the backend has no SMTP configured and is
-  // running in DEBUG mode (see core/email.py) — it echoes the code back
-  // in the response instead of actually emailing it, specifically so local
-  // testing isn't blocked on real email delivery being set up. Remove this
-  // once EMAIL_HOST_USER/PASSWORD are configured in production.
-  const [devOtp, setDevOtp] = useState("");
 
   const onContinueFromDetails = async () => {
-    if (!fullName.trim() || !/^\d{10}$/.test(mobile.trim())) {
-      setError("Fill in your name and a valid 10-digit mobile number.");
+    if (!fullName.trim() || !/^\d{10}$/.test(mobile.trim()) || !email.trim()) {
+      setError("Fill in your name, mobile number, and email.");
       return;
     }
     setError("");
-    if (!email.trim()) {
-      // No email means nothing to verify — go straight to setting a password.
-      setStep("password");
-      return;
-    }
     setLoading(true);
     try {
-      // An email means a verification code is required before the account
-      // can actually be created — mirrors PortalRegisterRequestOTPView.
-      const res = await registerRequestOtp(mobile.trim(), email.trim());
-      setDevOtp(res.data?.debug_otp || "");
+      await registerRequestOtp(email.trim());
       setStep("otp");
     } catch (err) {
       setError(apiErrorMessage(err));
@@ -73,7 +67,8 @@ export function RegisterScreen() {
     setError("");
     setLoading(true);
     try {
-      await registerVerifyOtp(mobile.trim(), otp.trim());
+      const token = await registerVerifyOtp(email.trim(), otp.trim());
+      setActionToken(token);
       setStep("password");
     } catch (err) {
       setError(apiErrorMessage(err, "Incorrect code."));
@@ -97,10 +92,10 @@ export function RegisterScreen() {
     setLoading(true);
     try {
       await registerAccount({
+        action_token: actionToken,
         full_name: fullName.trim(),
         mobile: mobile.trim(),
         password: password.trim(),
-        email: email.trim() || undefined,
         date_of_birth: dob.trim() || undefined,
       });
       navigation.navigate("Login");
@@ -112,7 +107,7 @@ export function RegisterScreen() {
   };
 
   const onBack = () => {
-    if (step === "password") setStep(email.trim() ? "otp" : "details");
+    if (step === "password") setStep("otp");
     else if (step === "otp") setStep("details");
     else navigation.goBack();
   };
@@ -143,8 +138,8 @@ export function RegisterScreen() {
         <>
           <TextField label="Full name" placeholder="e.g. Rohan Sharma" value={fullName} onChangeText={setFullName} />
           <TextField label="Mobile number" placeholder="98xxxxxxxx" value={mobile} onChangeText={setMobile} keyboardType="number-pad" maxLength={10} />
-          <TextField label="Email (optional)" placeholder="you@example.com" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-          <Text style={styles.hint}>Add an email to secure your account with a verification code.</Text>
+          <TextField label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+          <Text style={styles.hint}>We'll send a verification code to confirm it's really you.</Text>
           <DateField label="Date of birth" value={dob} onChange={setDob} maximumDate={new Date()} />
           <PrimaryButton label="Continue" onPress={onContinueFromDetails} loading={loading} />
         </>
@@ -152,13 +147,6 @@ export function RegisterScreen() {
 
       {step === "otp" && (
         <>
-          {!!devOtp && (
-            <View style={styles.devBox}>
-              <Text style={styles.devText}>
-                Dev mode — email isn't configured on the backend yet, so here's the code directly: {devOtp}
-              </Text>
-            </View>
-          )}
           <TextField label="6-digit code" placeholder="000000" value={otp} onChangeText={setOtp} keyboardType="number-pad" maxLength={6} />
           <PrimaryButton label="Verify code" onPress={onVerifyOtp} loading={loading} />
           <Pressable onPress={() => navigation.navigate("Login")} style={styles.backToLoginWrap}>
@@ -188,8 +176,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 17, fontWeight: "600", color: NEUTRAL.textPrimary, marginTop: 10 },
   subtitle: { fontSize: 12, color: NEUTRAL.textSecondary, marginTop: 4, textAlign: "center", paddingHorizontal: 12 },
   hint: { fontSize: 11, color: NEUTRAL.textMuted, marginTop: -8, marginBottom: 14 },
-  devBox: { backgroundColor: NEUTRAL.warningBg, borderRadius: 10, padding: 10, marginBottom: 12 },
-  devText: { fontSize: 11.5, color: NEUTRAL.warning },
   backToLoginWrap: { alignSelf: "center", marginTop: 16 },
   backToLogin: { fontSize: 12.5, color: NEUTRAL.textSecondary, fontWeight: "600" },
 });
