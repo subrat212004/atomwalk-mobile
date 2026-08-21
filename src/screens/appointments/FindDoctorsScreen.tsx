@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TextInput, Pressable } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Screen, BackHeader, EmptyState, ErrorBanner } from "@/components/Layout";
-import { SelectField } from "@/components/SelectField";
 import { PrimaryButton } from "@/components/Buttons";
 import { Card } from "@/components/Card";
 import { NEUTRAL } from "@/theme/themes";
@@ -92,12 +91,6 @@ export function FindDoctorsScreen() {
     return acc;
   }, {});
 
-  const specialtyOptions = specialties.map((s) => ({
-    value: s.name,
-    label: s.name,
-    meta: `${s.doctor_count} doctor${s.doctor_count === 1 ? "" : "s"}`,
-  }));
-
   return (
     <Screen>
       <BackHeader title="Find doctors" onBack={() => navigation.goBack()} />
@@ -120,21 +113,6 @@ export function FindDoctorsScreen() {
           />
         </View>
       )}
-      <SelectField
-        label="Specialty"
-        value={specialty}
-        onChange={setSpecialty}
-        options={
-          preselectedTenant
-            ? specialtyOptions.filter((o) => doctors.some((d) => d.specialisation === o.value))
-            : specialtyOptions
-        }
-        placeholder="All specialties"
-        searchable
-        searchPlaceholder="Search specialties…"
-        clearLabel="All specialties"
-      />
-
       {!!error && <ErrorBanner message={error} onRetry={load} />}
 
       {browsingHospitals && specialties.length > 0 && (

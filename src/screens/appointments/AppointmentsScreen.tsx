@@ -39,6 +39,16 @@ function timeAgo(dateStr: string): string {
 const CANCELLABLE_STATUSES = ["scheduled", "waiting", "vitals_done"];
 const RESCHEDULABLE_STATUSES = ["scheduled", "waiting"];
 
+// PortalMyBookingsView.doctor_id is meant to be the plain StaffUser int pk,
+// but on a backend that predates the UUID-unwrap fix it serializes the raw
+// UUIDField instead (a string like "00000000-...-0000003a") — silently
+// breaking any deep-link built from it (Book follow-up, Reschedule) with a
+// request that can only 404. Guard against that shape here rather than
+// sending it.
+function hasUsableDoctorId(id: unknown): id is number {
+  return typeof id === "number" && Number.isInteger(id);
+}
+
 type Nav = CompositeNavigationProp<
   BottomTabNavigationProp<AppTabsParamList, "Appointments">,
   NativeStackNavigationProp<AppStackParamList>
@@ -162,8 +172,8 @@ export function AppointmentsScreen() {
                     <PrimaryButton
                       label="Book follow-up"
                       compact
-                      onPress={() => b.doctor_id && navigation.navigate("DoctorDetail", { tenantId: b.tenant_id, doctorId: b.doctor_id })}
-                      disabled={!b.doctor_id}
+                      onPress={() => hasUsableDoctorId(b.doctor_id) && navigation.navigate("DoctorDetail", { tenantId: b.tenant_id, doctorId: b.doctor_id })}
+                      disabled={!hasUsableDoctorId(b.doctor_id)}
                     />
                   </View>
                 </Card>
@@ -204,7 +214,7 @@ export function AppointmentsScreen() {
                     clickable and failing with a server error. */}
                 {!isPaid && (CANCELLABLE_STATUSES.includes(b.status) || RESCHEDULABLE_STATUSES.includes(b.status)) && (
                   <View style={styles.compactActionsRow}>
-                    {RESCHEDULABLE_STATUSES.includes(b.status) && b.doctor_id && (
+                    {RESCHEDULABLE_STATUSES.includes(b.status) && hasUsableDoctorId(b.doctor_id) && (
                       <SecondaryButton
                         label="Reschedule"
                         compact
@@ -212,7 +222,7 @@ export function AppointmentsScreen() {
                           navigation.navigate("Reschedule", {
                             bookingId: b.id,
                             tenantId: b.tenant_id,
-                            doctorId: b.doctor_id!,
+                            doctorId: b.doctor_id,
                             doctorName: b.doctor,
                             hospitalName: b.hospital,
                             patientName: b.patient_name || "You",
