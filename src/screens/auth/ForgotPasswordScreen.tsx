@@ -38,7 +38,7 @@ export function ForgotPasswordScreen() {
   return (
     <Screen>
       <BackHeader title="Reset password" onBack={() => navigation.goBack()} />
-      <MetalHero compact style={styles.hero}>
+      <MetalHero compact curved style={styles.hero}>
         <View style={styles.heroInner}>
           <LogoPill size={44} />
         </View>

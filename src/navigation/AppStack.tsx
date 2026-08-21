@@ -6,6 +6,7 @@ import { FindDoctorsScreen } from "@/screens/appointments/FindDoctorsScreen";
 import { DoctorDetailScreen } from "@/screens/appointments/DoctorDetailScreen";
 import { ConfirmBookingScreen } from "@/screens/appointments/ConfirmBookingScreen";
 import { BookingSuccessScreen } from "@/screens/appointments/BookingSuccessScreen";
+import { PaymentPendingScreen } from "@/screens/appointments/PaymentPendingScreen";
 import { PrescriptionDetailScreen } from "@/screens/records/PrescriptionDetailScreen";
 import { PrescriptionsListScreen } from "@/screens/records/PrescriptionsListScreen";
 import { LabReportsScreen } from "@/screens/records/LabReportsScreen";
@@ -34,6 +35,7 @@ export function AppStack() {
       <Stack.Screen name="DoctorDetail" component={DoctorDetailScreen} />
       <Stack.Screen name="ConfirmBooking" component={ConfirmBookingScreen} />
       <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} options={{ gestureEnabled: false }} />
+      <Stack.Screen name="PaymentPending" component={PaymentPendingScreen} options={{ gestureEnabled: false }} />
       <Stack.Screen name="PrescriptionDetail" component={PrescriptionDetailScreen} />
       <Stack.Screen name="Prescriptions" component={PrescriptionsListScreen} />
       <Stack.Screen name="LabReports" component={LabReportsScreen} />

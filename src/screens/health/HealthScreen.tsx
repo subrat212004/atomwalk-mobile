@@ -96,7 +96,7 @@ export function HealthScreen() {
   return (
     <Screen onRefresh={loadSummary} refreshing={loading}>
       {selected && (
-        <MetalHero style={styles.hero}>
+        <MetalHero style={styles.hero} curved>
           <Text style={styles.name}>{selected.full_name}</Text>
           <Text style={styles.meta}>
             {ageFromDob(selected.date_of_birth)} · {selected.gender === "M" ? "Male" : selected.gender === "F" ? "Female" : "—"} · AWPID: {selected.awpid}
@@ -128,6 +128,9 @@ export function HealthScreen() {
           subtitle={vax ? `${vax.completed_count} of ${vax.total_count} completed` : "—"}
           onPress={() => openGadget("Vaccinations")}
           style={styles.gadgetSize}
+          iconSize={34}
+          radius={22}
+          cardPadding={16}
         />
         <GadgetCard
           tint={GADGET_TINTS.blue}
@@ -136,6 +139,9 @@ export function HealthScreen() {
           subtitle="Visits, vaccinations, growth, and more"
           onPress={() => openGadget("HealthTimeline")}
           style={styles.gadgetSize}
+          iconSize={34}
+          radius={22}
+          cardPadding={16}
         />
         <GadgetCard
           tint={GADGET_TINTS.coral}
@@ -144,9 +150,33 @@ export function HealthScreen() {
           subtitle={summary?.last_hospital ? `Last: ${summary.last_hospital}` : "No visits yet"}
           onPress={() => openGadget("HealthVisits")}
           style={styles.gadgetSize}
+          iconSize={34}
+          radius={22}
+          cardPadding={16}
         />
-        <GadgetCard tint={GADGET_TINTS.muted} icon={TrendingUp} title="Growth" subtitle="Coming soon" disabled onPress={() => {}} style={styles.gadgetSize} />
-        <GadgetCard tint={GADGET_TINTS.amber} icon={FlaskConical} title="Lab reports" subtitle="Tests, results, and reports" onPress={openLabReports} style={styles.gadgetSize} />
+        <GadgetCard
+          tint={GADGET_TINTS.muted}
+          icon={TrendingUp}
+          title="Growth"
+          subtitle="Coming soon"
+          disabled
+          onPress={() => {}}
+          style={styles.gadgetSize}
+          iconSize={34}
+          radius={22}
+          cardPadding={16}
+        />
+        <GadgetCard
+          tint={GADGET_TINTS.amber}
+          icon={FlaskConical}
+          title="Lab reports"
+          subtitle="Tests, results, and reports"
+          onPress={openLabReports}
+          style={styles.gadgetSize}
+          iconSize={34}
+          radius={22}
+          cardPadding={16}
+        />
       </View>
     </Screen>
   );
@@ -159,6 +189,6 @@ const styles = StyleSheet.create({
   lastVisit: { fontSize: 11, color: "#EAF3DE", marginTop: 6 },
   addFamilyLink: { alignSelf: "flex-end", marginTop: -6, marginBottom: 14 },
   addFamilyText: { fontSize: 12, fontWeight: "600" },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 4 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 11, marginTop: 8 },
   gadgetSize: { width: "47%" },
 });

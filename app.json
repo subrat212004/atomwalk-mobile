@@ -17,10 +17,14 @@
       }
     },
     "extra": {
-      "apiBaseUrl": "http://192.168.0.230:8000/api/v1"
+      "apiBaseUrl": "http://192.168.0.230:8000/api/v1",
+      "eas": {
+        "projectId": "e202f380-fea0-4a2e-b1c7-30772fc09d96"
+      }
     },
     "plugins": [
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "owner": "subrat2114"
   }
 }

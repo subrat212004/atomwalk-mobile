@@ -63,6 +63,11 @@ export interface Booking {
   now_serving_token: number | null;
   patient_name: string | null;
   patient_awpid: string | null;
+  // payment/billing-v1 — mirrors PortalMyBookingsView (apps/patients/
+  // portal_views.py). null for a pay_at_desk booking (no online payment
+  // was ever attempted); payment_amount is only populated once "paid".
+  payment_status: "unpaid" | "pending_online" | "paid" | null;
+  payment_amount: string | null;
 }
 
 export interface ConsentRequired {
@@ -70,6 +75,26 @@ export interface ConsentRequired {
   hospital_name: string;
   share_categories: string[];
   message: string;
+}
+
+// Shape of TenantPaymentGatewayConfig's create_order() result (apps/billing/
+// gateway/{razorpay,cashfree}_adapter.py) as handed back on PortalBookView's
+// response — provider-specific fields are optional since only one set is
+// ever populated depending on `provider`.
+export interface GatewayOrder {
+  provider: "razorpay" | "cashfree";
+  order_id: string;
+  amount: string;
+  currency: string;
+  invoice_id?: number;
+  // razorpay
+  amount_paise?: number;
+  key_id?: string;
+  // cashfree
+  cf_order_id?: string;
+  payment_session_id?: string;
+  app_id?: string;
+  environment?: "sandbox" | "production";
 }
 
 export interface BookingResult {
@@ -82,6 +107,12 @@ export interface BookingResult {
   status: string;
   payment_preference: string;
   patient_name: string;
+  // Present only when payment_preference is "pay_online" and the hospital
+  // actually has a working gateway connected — see PortalBookView's
+  // docstring on gateway_order/gateway_error being mutually informative,
+  // not both-or-neither.
+  gateway_order?: GatewayOrder | null;
+  gateway_error?: string | null;
 }
 
 export interface MedicalRecord {

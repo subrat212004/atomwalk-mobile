@@ -112,6 +112,20 @@ export async function rescheduleBooking(id: number, payload: { scheduled_date: s
   return res.data;
 }
 
+/**
+ * GET /portal/my-bookings/<id>/receipt/ — only ever resolves once the
+ * booking-fee payment has genuinely cleared (PortalBookingReceiptPDFView
+ * 404s otherwise); same base64-data-URI shape as every other file endpoint
+ * in this app (see getDocumentDetail above), meant to be handed straight to
+ * downloadDataUri (src/utils/fileHelpers.ts).
+ */
+export async function getBookingReceipt(id: number) {
+  const res = await api.get<Envelope<{ file_data: string; file_name: string; mime_type: string }>>(
+    `/portal/my-bookings/${id}/receipt/`
+  );
+  return res.data.data;
+}
+
 export async function getMyRecords(patientAwpid?: string) {
   const res = await api.get<{ results: MedicalRecord[]; pagination: any }>("/portal/my-records/", {
     params: patientAwpid ? { patient_awpid: patientAwpid } : {},

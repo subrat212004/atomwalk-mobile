@@ -4,7 +4,8 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { CompositeNavigationProp } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { CalendarDays, ClipboardList, HeartPulse, Pill as PillIcon, FlaskConical, Bell } from "lucide-react-native";
+import { CalendarDays, ClipboardList, HeartPulse, Pill as PillIcon, FlaskConical, Bell, ChevronRight } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Screen, ErrorBanner } from "@/components/Layout";
 import { Card } from "@/components/Card";
 import { Pill, statusTone } from "@/components/Pill";
@@ -28,9 +29,13 @@ type Nav = CompositeNavigationProp<
   NativeStackNavigationProp<AppStackParamList>
 >;
 
+// "Book visit" used to live here as a tile among five — pulled out into its
+// own promoted CTA band (see bookCta below) since booking is the app's
+// actual primary task, not one option equally weighted against the rest.
+// That also fixes the 5-tiles-in-a-2-column-grid problem (an odd count
+// always leaves one tile orphaned on its own row).
 const QUICK_ACTIONS: { key: string; label: string; sub: string; icon: LucideIcon; tint: GadgetTint }[] = [
-  { key: "book", label: "Book visit", sub: "Find a doctor and a slot", icon: CalendarDays, tint: DASHBOARD_TINTS.teal },
-  { key: "appointments", label: "Appointments", sub: "Upcoming and past visits", icon: ClipboardList, tint: DASHBOARD_TINTS.indigo },
+  { key: "appointments", label: "Appointments", sub: "Upcoming and past visits", icon: ClipboardList, tint: DASHBOARD_TINTS.teal },
   { key: "health", label: "Health journey", sub: "Vaccines, visits, and more", icon: HeartPulse, tint: DASHBOARD_TINTS.rose },
   { key: "prescriptions", label: "Prescriptions", sub: "From your past visits", icon: PillIcon, tint: DASHBOARD_TINTS.slate },
   { key: "labs", label: "Lab reports", sub: "Tests, results, and reports", icon: FlaskConical, tint: DASHBOARD_TINTS.gold },
@@ -91,12 +96,12 @@ export function HomeScreen() {
   );
 
   const onQuickAction = (key: string) => {
-    if (key === "book") navigation.navigate("FindDoctors", undefined);
-    else if (key === "appointments") navigation.navigate("Tabs" as any, { screen: "Appointments" } as any);
+    if (key === "appointments") navigation.navigate("Tabs" as any, { screen: "Appointments" } as any);
     else if (key === "health") navigation.navigate("Tabs" as any, { screen: "Health" } as any);
     else if (key === "prescriptions") navigation.navigate("Prescriptions");
     else if (key === "labs") navigation.navigate("LabReports");
   };
+  const onBookVisit = () => navigation.navigate("FindDoctors", undefined);
 
   const nextUp = upcoming[0];
   // "Your bookings" used to show the next 2 upcoming appointments regardless
@@ -107,7 +112,7 @@ export function HomeScreen() {
 
   return (
     <Screen onRefresh={load} refreshing={loading}>
-      <MetalHero compact style={styles.hero}>
+      <MetalHero compact curved style={styles.hero}>
         <View style={styles.heroTop}>
           <LogoPill size={40} />
           <Pressable onPress={() => navigation.navigate("Notifications")} hitSlop={10} style={styles.bellBtn}>
@@ -150,11 +155,33 @@ export function HomeScreen() {
           ) : (
             <>
               <Text style={styles.remTitle}>No upcoming appointments</Text>
-              <Text style={styles.remSub}>Tap Book visit below to see a doctor</Text>
+              <Text style={styles.remSub}>Tap Book an appointment below to see a doctor</Text>
             </>
           )}
         </View>
         <Text style={styles.remChev}>›</Text>
+      </Pressable>
+
+      {/* Promoted out of the quick-access grid — booking is what this app
+          is actually for, not one tile among several. */}
+      <Pressable onPress={onBookVisit} style={({ pressed }) => [styles.bookCta, pressed && { opacity: 0.92 }]}>
+        <LinearGradient
+          colors={["#249c57", "#15803D", "#0f5c2e"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.bookGlow} pointerEvents="none" />
+        <View style={styles.bookIcon}>
+          <CalendarDays size={22} color="#FFFFFF" strokeWidth={2.2} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.bookTitle}>Book an appointment</Text>
+          <Text style={styles.bookSub}>Find a doctor and a slot</Text>
+        </View>
+        <View style={styles.bookArrow}>
+          <ChevronRight size={16} color="#FFFFFF" strokeWidth={2.4} />
+        </View>
       </Pressable>
 
       <Text style={styles.sectionTitle}>Quick access</Text>
@@ -166,7 +193,9 @@ export function HomeScreen() {
             title={qa.label}
             subtitle={qa.sub}
             tint={qa.tint}
-            iconSize={32}
+            iconSize={34}
+            radius={22}
+            cardPadding={16}
             onPress={() => onQuickAction(qa.key)}
             style={styles.qa}
           />
@@ -232,14 +261,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     backgroundColor: NEUTRAL.surface,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 12,
-    marginBottom: 18,
-    borderWidth: 0.5,
-    borderColor: NEUTRAL.border,
+    marginBottom: 12,
+    shadowColor: "#0a4020",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    elevation: 3,
   },
   remTitle: { fontSize: 12.5, fontWeight: "600", color: NEUTRAL.textPrimary },
   remSub: { fontSize: 11, color: NEUTRAL.textSecondary, marginTop: 3 },
+  bookCta: {
+    position: "relative",
+    overflow: "hidden",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 18,
+    shadowColor: "#0f5c2e",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 6,
+  },
+  bookGlow: { position: "absolute", top: -30, right: -30, width: 100, height: 100, borderRadius: 50, backgroundColor: "rgba(255,255,255,0.14)" },
+  bookIcon: { width: 44, height: 44, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
+  bookTitle: { fontWeight: "700", fontSize: 14.5, color: "#FFFFFF" },
+  bookSub: { fontSize: 11, color: "rgba(255,255,255,0.82)", marginTop: 2 },
+  bookArrow: { width: 30, height: 30, borderRadius: 15, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
   remChev: { fontSize: 18, color: NEUTRAL.textMuted },
   sectionTitle: { fontSize: 12, fontWeight: "600", color: NEUTRAL.textSecondary, marginBottom: 8, marginTop: 4 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 4 },

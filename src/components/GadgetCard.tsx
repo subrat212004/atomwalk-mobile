@@ -49,6 +49,8 @@ export function GadgetCard({
   tint,
   disabled,
   iconSize = 36,
+  radius = 16,
+  cardPadding = 14,
   style,
 }: {
   icon: LucideIcon;
@@ -58,11 +60,16 @@ export function GadgetCard({
   tint: GadgetTint;
   disabled?: boolean;
   iconSize?: number;
+  /** Overrides the default 16px corner radius — e.g. Home's bigger, more
+   * curved dashboard tiles, without affecting other GadgetCard users
+   * (Health hub) that still want the original radius. */
+  radius?: number;
+  cardPadding?: number;
   style?: ViewStyle;
 }) {
   return (
-    <Pressable onPress={onPress} disabled={disabled} style={[styles.wrap, { shadowColor: tint.shadow }, disabled && styles.disabled, style]}>
-      <LinearGradient colors={tint.bg} start={{ x: 0.05, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.card, { borderColor: tint.border }]}>
+    <Pressable onPress={onPress} disabled={disabled} style={[styles.wrap, { borderRadius: radius, shadowColor: tint.shadow }, disabled && styles.disabled, style]}>
+      <LinearGradient colors={tint.bg} start={{ x: 0.05, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.card, { borderRadius: radius, padding: cardPadding, borderColor: tint.border }]}>
         <LinearGradient
           colors={SHEEN}
           locations={[0, 0.5, 1]}

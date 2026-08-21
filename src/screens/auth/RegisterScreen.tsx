@@ -127,7 +127,7 @@ export function RegisterScreen() {
   return (
     <Screen>
       <BackHeader title="Create account" onBack={onBack} />
-      <MetalHero compact style={styles.hero} decorative>
+      <MetalHero compact style={styles.hero} decorative curved>
         <View style={styles.heroInner}>
           <LogoPill size={44} />
         </View>

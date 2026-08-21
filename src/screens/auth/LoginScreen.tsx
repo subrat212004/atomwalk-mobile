@@ -46,7 +46,7 @@ export function LoginScreen() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
       <Screen>
-        <MetalHero style={styles.hero} decorative>
+        <MetalHero style={styles.hero} decorative curved>
           <View style={styles.heroInner}>
             <LogoPill size={58} />
           </View>

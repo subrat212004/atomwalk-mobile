@@ -38,6 +38,30 @@ export type AppStackParamList = {
     patientName: string;
   };
   BookingSuccess: { hospital: string; doctor: string; date: string; time?: string; tokenNumber: number };
+  PaymentPending: {
+    bookingId: number;
+    gatewayOrder: import("@/api/types").GatewayOrder;
+    hospitalName: string;
+    doctorName: string;
+    date: string;
+    time?: string;
+    tokenNumber: number;
+    // Carries everything needed to make a genuinely fresh POST /portal/book/
+    // call for "Try payment again" / "Book & pay at front desk instead" —
+    // the abandoned booking is already cancelled server-side by the time
+    // either button is shown, so resuming it isn't an option, only
+    // resubmitting is (mirrors the web app's retryOnlinePayment/
+    // retryPayAtFrontDesk in DoctorProfilePage.jsx).
+    rebook: {
+      tenantId: number;
+      doctorId: number;
+      scheduledDate: string;
+      scheduledTime?: string;
+      chiefComplaint?: string;
+      patientAwpid?: string;
+      patientName: string;
+    };
+  };
   PrescriptionDetail: { record: import("@/api/types").MedicalRecord };
   Prescriptions: undefined;
   LabReports: { patientAwpid?: string; patientName?: string } | undefined;

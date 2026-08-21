@@ -87,7 +87,7 @@ export function ProfileScreen() {
   return (
     <Screen onRefresh={load} refreshing={loading}>
       {profile && (
-        <MetalHero style={styles.hero}>
+        <MetalHero style={styles.hero} curved>
           <View style={styles.heroContent}>
             <View style={styles.avwrap}>
               <View style={styles.avatar}>

@@ -93,7 +93,7 @@ export function ResetPasswordScreen() {
   return (
     <Screen>
       <BackHeader title="Reset password" onBack={() => (step === "password" ? setStep("otp") : navigation.goBack())} />
-      <MetalHero compact style={styles.hero}>
+      <MetalHero compact curved style={styles.hero}>
         <View style={styles.heroInner}>
           <LogoPill size={44} />
         </View>

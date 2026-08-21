@@ -51,15 +51,20 @@ export function MetalHero({
   style,
   compact,
   decorative,
+  curved,
 }: {
   children: React.ReactNode;
   style?: ViewStyle;
   compact?: boolean;
   /** Adds the soft background-circle texture — opt-in for auth screens. */
   decorative?: boolean;
+  /** Rounds the bottom edge instead of cutting off square — opt-in so the
+   * hero reads as flowing into the page on screens designed for it (Home),
+   * without changing the edge-to-edge look everywhere else this is used. */
+  curved?: boolean;
 }) {
   return (
-    <View style={[styles.wrap, compact ? styles.compactPad : styles.pad, style]}>
+    <View style={[styles.wrap, compact ? styles.compactPad : styles.pad, curved && styles.curved, style]}>
       <LinearGradient
         colors={METAL_STOPS}
         locations={METAL_LOCATIONS}
@@ -82,6 +87,7 @@ export function MetalHero({
 
 const styles = StyleSheet.create({
   wrap: { marginHorizontal: -16, marginTop: -16, overflow: "hidden" },
+  curved: { borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
   pad: { paddingHorizontal: 16, paddingTop: 18, paddingBottom: 26 },
   compactPad: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 18 },
   content: { position: "relative" },

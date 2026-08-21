@@ -55,6 +55,30 @@ export function ConfirmBookingScreen() {
       });
       if ("consent_required" in result) {
         setConsent(result);
+      } else if (result.payment_preference === "pay_online" && result.gateway_order) {
+        // Slot is only held, not booked, until PaymentPendingScreen sees
+        // payment_status genuinely turn "paid" via the backend — this is
+        // the ONLY path that ever navigates there for a pay_online booking,
+        // same "never trust the checkout's own success signal" contract as
+        // the web app.
+        navigation.replace("PaymentPending", {
+          bookingId: result.booking_id,
+          gatewayOrder: result.gateway_order,
+          hospitalName: result.hospital,
+          doctorName: result.doctor,
+          date: result.date,
+          time: result.time || undefined,
+          tokenNumber: result.token_number,
+          rebook: {
+            tenantId: params.tenantId,
+            doctorId: params.doctorId,
+            scheduledDate: params.date,
+            scheduledTime: params.time,
+            chiefComplaint: complaint.trim() || undefined,
+            patientAwpid: params.patientAwpid,
+            patientName: params.patientName,
+          },
+        });
       } else {
         navigation.replace("BookingSuccess", {
           hospital: result.hospital,

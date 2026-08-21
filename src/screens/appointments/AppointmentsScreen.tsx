@@ -11,12 +11,14 @@ import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
 import { DetailSheet, DetailRow } from "@/components/DetailSheet";
 import { NEUTRAL } from "@/theme/themes";
 import { useAppTheme } from "@/context/ThemeContext";
-import { getMyBookings, getMyRecords, cancelBooking } from "@/api/portal";
+import { getMyBookings, getMyRecords, cancelBooking, getBookingReceipt } from "@/api/portal";
 import { apiErrorMessage } from "@/api/client";
+import { downloadDataUri } from "@/utils/fileHelpers";
 import { Booking, MedicalRecord } from "@/api/types";
 import { AppStackParamList, AppTabsParamList } from "@/navigation/types";
 import { MetalHero } from "@/components/MetalHero";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { DownloadButton } from "@/components/DownloadButton";
 import { IconBadge } from "@/components/IconBadge";
 import { CheckCircle2, ChevronRight } from "lucide-react-native";
 
@@ -108,7 +110,7 @@ export function AppointmentsScreen() {
 
   return (
     <Screen onRefresh={load} refreshing={loading}>
-      <MetalHero compact style={styles.hero}>
+      <MetalHero compact curved style={styles.hero}>
         <Text style={styles.bannerTitle}>Find a doctor instantly</Text>
         <Text style={styles.bannerSub}>Book across every hospital on the platform</Text>
         <Pressable onPress={() => navigation.navigate("FindDoctors", undefined)} style={styles.bannerBtn}>
@@ -168,6 +170,7 @@ export function AppointmentsScreen() {
               </Pressable>
             );
           }
+          const isPaid = b.payment_status === "paid";
           return (
             <Pressable key={b.id} onPress={() => setDetailBooking(b)}>
               <Card>
@@ -189,7 +192,17 @@ export function AppointmentsScreen() {
                   </Text>
                   {b.token_number != null && <Text style={styles.tokenLine}>Token #{b.token_number}</Text>}
                 </View>
-                {(CANCELLABLE_STATUSES.includes(b.status) || RESCHEDULABLE_STATUSES.includes(b.status)) && (
+                {isPaid && (
+                  <View style={styles.rowBetween}>
+                    <Pill label={`Confirmed ✓ · PAID${b.payment_amount ? ` · ₹${b.payment_amount}` : ""}`} tone="success" />
+                  </View>
+                )}
+                {/* Once payment_status is "paid" the backend hard-rejects
+                    cancel/reschedule for this appointment (see
+                    PortalCancelBookingView/PortalRescheduleBookingView) —
+                    controls are removed here entirely rather than left
+                    clickable and failing with a server error. */}
+                {!isPaid && (CANCELLABLE_STATUSES.includes(b.status) || RESCHEDULABLE_STATUSES.includes(b.status)) && (
                   <View style={styles.compactActionsRow}>
                     {RESCHEDULABLE_STATUSES.includes(b.status) && b.doctor_id && (
                       <SecondaryButton
@@ -210,6 +223,19 @@ export function AppointmentsScreen() {
                     {CANCELLABLE_STATUSES.includes(b.status) && (
                       <SecondaryButton label="Cancel" danger compact onPress={() => onCancel(b)} loading={cancellingId === b.id} />
                     )}
+                  </View>
+                )}
+                {isPaid && (
+                  <View style={styles.compactActionsRow}>
+                    <DownloadButton
+                      label="Download bill"
+                      compact
+                      fileLabel={`Receipt for ${b.hospital}`}
+                      onDownload={async () => {
+                        const receipt = await getBookingReceipt(b.id);
+                        await downloadDataUri(receipt.file_name, receipt.file_data);
+                      }}
+                    />
                   </View>
                 )}
               </Card>
@@ -249,6 +275,25 @@ export function AppointmentsScreen() {
             {detailBooking.now_serving_token != null && <DetailRow label="Now serving" value={`#${detailBooking.now_serving_token}`} />}
             {detailBooking.people_ahead != null && <DetailRow label="Patients ahead of you" value={String(detailBooking.people_ahead)} />}
             <DetailRow label="Reason for visit" value={detailBooking.chief_complaint || "Not specified"} />
+            {detailBooking.payment_status === "paid" && (
+              <DetailRow
+                label="Payment"
+                value={`Confirmed ✓ · PAID${detailBooking.payment_amount ? ` · ₹${detailBooking.payment_amount}` : ""}`}
+                valueColor={toneColor("success")}
+              />
+            )}
+
+            {detailBooking.payment_status === "paid" && (
+              <DownloadButton
+                label="Download bill"
+                fileLabel={`Receipt for ${detailBooking.hospital}`}
+                onDownload={async () => {
+                  const receipt = await getBookingReceipt(detailBooking.id);
+                  await downloadDataUri(receipt.file_name, receipt.file_data);
+                }}
+                style={{ marginTop: 14 }}
+              />
+            )}
 
             {(() => {
               const rx = findPrescription(detailBooking);
