@@ -41,9 +41,13 @@ export function RescheduleScreen() {
     setSelectedTime(null);
     setSlots([]);
     setSlotsLoading(true);
+    // Best-effort only -- a failure here (e.g. doctorId not resolving to a
+    // real doctor) just means no suggested slots, not a reschedule failure;
+    // the empty state below already says so. A visible error banner here
+    // would contradict that and read as broken when it isn't.
     getSlots(tenantId, doctorId, selectedDate)
       .then(setSlots)
-      .catch((err) => setError(apiErrorMessage(err)))
+      .catch(() => {})
       .finally(() => setSlotsLoading(false));
   }, [tenantId, doctorId, selectedDate]);
 
