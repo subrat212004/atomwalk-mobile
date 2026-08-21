@@ -170,7 +170,7 @@ export function AppointmentsScreen() {
                       <SecondaryButton label="View prescription" compact onPress={() => navigation.navigate("PrescriptionDetail", { record: rx })} />
                     )}
                     <PrimaryButton
-                      label="Book follow-up"
+                      label={hasUsableDoctorId(b.doctor_id) ? "Book follow-up" : "Book follow-up (Coming soon)"}
                       compact
                       onPress={() => hasUsableDoctorId(b.doctor_id) && navigation.navigate("DoctorDetail", { tenantId: b.tenant_id, doctorId: b.doctor_id })}
                       disabled={!hasUsableDoctorId(b.doctor_id)}
@@ -214,11 +214,13 @@ export function AppointmentsScreen() {
                     clickable and failing with a server error. */}
                 {!isPaid && (CANCELLABLE_STATUSES.includes(b.status) || RESCHEDULABLE_STATUSES.includes(b.status)) && (
                   <View style={styles.compactActionsRow}>
-                    {RESCHEDULABLE_STATUSES.includes(b.status) && hasUsableDoctorId(b.doctor_id) && (
+                    {RESCHEDULABLE_STATUSES.includes(b.status) && (
                       <SecondaryButton
-                        label="Reschedule"
+                        label={hasUsableDoctorId(b.doctor_id) ? "Reschedule" : "Reschedule (Coming soon)"}
                         compact
+                        disabled={!hasUsableDoctorId(b.doctor_id)}
                         onPress={() =>
+                          hasUsableDoctorId(b.doctor_id) &&
                           navigation.navigate("Reschedule", {
                             bookingId: b.id,
                             tenantId: b.tenant_id,
