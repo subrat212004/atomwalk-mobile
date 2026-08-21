@@ -76,11 +76,7 @@ export function LoginScreen() {
           error={errors.password}
         />
 
-        <Pressable onPress={() => navigation.navigate("ForgotPassword")} style={styles.forgotWrap}>
-          <Text style={styles.forgot}>Forgot password?</Text>
-        </Pressable>
-
-        <PrimaryButton label="Sign in" onPress={onSubmit} loading={loading} />
+        <PrimaryButton label="Sign in" onPress={onSubmit} loading={loading} style={{ marginTop: 6 }} />
 
         <Pressable onPress={() => navigation.navigate("Register")} style={styles.footerWrap}>
           <Text style={styles.footer}>

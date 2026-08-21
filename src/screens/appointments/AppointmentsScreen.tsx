@@ -37,17 +37,6 @@ function timeAgo(dateStr: string): string {
 // Mirrors the backend's own rules (apps/patients/portal_views.py) so the
 // buttons only ever appear when the action would actually succeed.
 const CANCELLABLE_STATUSES = ["scheduled", "waiting", "vitals_done"];
-const RESCHEDULABLE_STATUSES = ["scheduled", "waiting"];
-
-// PortalMyBookingsView.doctor_id is meant to be the plain StaffUser int pk,
-// but on a backend that predates the UUID-unwrap fix it serializes the raw
-// UUIDField instead (a string like "00000000-...-0000003a") — silently
-// breaking any deep-link built from it (Book follow-up, Reschedule) with a
-// request that can only 404. Guard against that shape here rather than
-// sending it.
-function hasUsableDoctorId(id: unknown): id is number {
-  return typeof id === "number" && Number.isInteger(id);
-}
 
 type Nav = CompositeNavigationProp<
   BottomTabNavigationProp<AppTabsParamList, "Appointments">,
@@ -165,17 +154,11 @@ export function AppointmentsScreen() {
                       </Text>
                     </View>
                   </View>
-                  <View style={styles.compactActionsRow}>
-                    {rx && (
+                  {rx && (
+                    <View style={styles.compactActionsRow}>
                       <SecondaryButton label="View prescription" compact onPress={() => navigation.navigate("PrescriptionDetail", { record: rx })} />
-                    )}
-                    <PrimaryButton
-                      label={hasUsableDoctorId(b.doctor_id) ? "Book follow-up" : "Book follow-up (Coming soon)"}
-                      compact
-                      onPress={() => hasUsableDoctorId(b.doctor_id) && navigation.navigate("DoctorDetail", { tenantId: b.tenant_id, doctorId: b.doctor_id })}
-                      disabled={!hasUsableDoctorId(b.doctor_id)}
-                    />
-                  </View>
+                    </View>
+                  )}
                 </Card>
               </Pressable>
             );
@@ -208,33 +191,13 @@ export function AppointmentsScreen() {
                   </View>
                 )}
                 {/* Once payment_status is "paid" the backend hard-rejects
-                    cancel/reschedule for this appointment (see
-                    PortalCancelBookingView/PortalRescheduleBookingView) —
-                    controls are removed here entirely rather than left
-                    clickable and failing with a server error. */}
-                {!isPaid && (CANCELLABLE_STATUSES.includes(b.status) || RESCHEDULABLE_STATUSES.includes(b.status)) && (
+                    cancel for this appointment (see
+                    PortalCancelBookingView) — the control is removed here
+                    entirely rather than left clickable and failing with a
+                    server error. */}
+                {!isPaid && CANCELLABLE_STATUSES.includes(b.status) && (
                   <View style={styles.compactActionsRow}>
-                    {RESCHEDULABLE_STATUSES.includes(b.status) && (
-                      <SecondaryButton
-                        label={hasUsableDoctorId(b.doctor_id) ? "Reschedule" : "Reschedule (Coming soon)"}
-                        compact
-                        disabled={!hasUsableDoctorId(b.doctor_id)}
-                        onPress={() =>
-                          hasUsableDoctorId(b.doctor_id) &&
-                          navigation.navigate("Reschedule", {
-                            bookingId: b.id,
-                            tenantId: b.tenant_id,
-                            doctorId: b.doctor_id,
-                            doctorName: b.doctor,
-                            hospitalName: b.hospital,
-                            patientName: b.patient_name || "You",
-                          })
-                        }
-                      />
-                    )}
-                    {CANCELLABLE_STATUSES.includes(b.status) && (
-                      <SecondaryButton label="Cancel" danger compact onPress={() => onCancel(b)} loading={cancellingId === b.id} />
-                    )}
+                    <SecondaryButton label="Cancel" danger compact onPress={() => onCancel(b)} loading={cancellingId === b.id} />
                   </View>
                 )}
                 {isPaid && (

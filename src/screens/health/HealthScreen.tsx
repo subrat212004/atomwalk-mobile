@@ -7,7 +7,7 @@ import { Screen, ErrorBanner } from "@/components/Layout";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { MetalHero } from "@/components/MetalHero";
 import { GadgetCard, GADGET_TINTS } from "@/components/GadgetCard";
-import { Syringe, Clock, Stethoscope, TrendingUp, FlaskConical } from "lucide-react-native";
+import { Syringe, Clock, Stethoscope, FlaskConical } from "lucide-react-native";
 import { useAppTheme } from "@/context/ThemeContext";
 import { getFamily, getProfile, getHealthSummary, getVaccinations } from "@/api/portal";
 import { apiErrorMessage } from "@/api/client";
@@ -149,18 +149,6 @@ export function HealthScreen() {
           title="Visits"
           subtitle={summary?.last_hospital ? `Last: ${summary.last_hospital}` : "No visits yet"}
           onPress={() => openGadget("HealthVisits")}
-          style={styles.gadgetSize}
-          iconSize={34}
-          radius={22}
-          cardPadding={16}
-        />
-        <GadgetCard
-          tint={GADGET_TINTS.muted}
-          icon={TrendingUp}
-          title="Growth"
-          subtitle="Coming soon"
-          disabled
-          onPress={() => {}}
           style={styles.gadgetSize}
           iconSize={34}
           radius={22}
