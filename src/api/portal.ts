@@ -227,9 +227,10 @@ export async function getTimeline(patientAwpid?: string, limit = 30) {
   return res.data.data.results;
 }
 
+/** PortalDocumentListCreateView returns a raw object, not the {success,data} envelope. */
 export async function getMyDocuments() {
-  const res = await api.get<Envelope<{ results: PatientDocument[] }>>("/portal/documents/");
-  return res.data.data.results;
+  const res = await api.get<{ results: PatientDocument[]; pagination: any }>("/portal/documents/");
+  return res.data.results;
 }
 
 export async function getDocumentDetail(id: number) {
@@ -237,6 +238,7 @@ export async function getDocumentDetail(id: number) {
   return res.data.data;
 }
 
+/** Same raw-object shape as the GET above, not the {success,data} envelope. */
 export async function uploadDocument(payload: {
   title: string;
   doc_type: string;
@@ -244,8 +246,8 @@ export async function uploadDocument(payload: {
   mime_type: string;
   file_data: string;
 }) {
-  const res = await api.post<Envelope<PatientDocument>>("/portal/documents/", payload);
-  return res.data.data;
+  const res = await api.post<PatientDocument>("/portal/documents/", payload);
+  return res.data;
 }
 
 /** PortalLabOrderListView returns a raw object, not the {success,data} envelope. */
