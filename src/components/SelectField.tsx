@@ -8,6 +8,7 @@ export interface SelectOption {
   value: string;
   label: string;
   meta?: string;
+  disabled?: boolean;
 }
 
 interface Props {
@@ -104,23 +105,26 @@ export function SelectField({
               renderItem={({ item }) => (
                 <Pressable
                   onPress={() => {
+                    if (item.disabled) return;
                     onChange(item.value);
                     close();
                   }}
-                  style={styles.option}
+                  disabled={item.disabled}
+                  style={[styles.option, item.disabled && styles.optionDisabled]}
                 >
                   <View style={{ flex: 1 }}>
                     <Text
                       style={[
                         styles.optionText,
-                        item.value === value && { color: theme.text, fontWeight: "600" },
+                        item.disabled && styles.optionTextDisabled,
+                        item.value === value && !item.disabled && { color: theme.text, fontWeight: "600" },
                       ]}
                     >
                       {item.label}
                     </Text>
                   </View>
                   {!!item.meta && <Text style={styles.optionMeta}>{item.meta}</Text>}
-                  {item.value === value && <Check size={15} color={theme.text} strokeWidth={2.4} style={{ marginLeft: 8 }} />}
+                  {item.value === value && !item.disabled && <Check size={15} color={theme.text} strokeWidth={2.4} style={{ marginLeft: 8 }} />}
                 </Pressable>
               )}
             />
@@ -172,7 +176,9 @@ const styles = StyleSheet.create({
   },
   list: { flexGrow: 0 },
   option: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 13, borderBottomWidth: 0.5, borderBottomColor: NEUTRAL.border },
+  optionDisabled: { opacity: 0.5 },
   optionText: { fontSize: 14, color: NEUTRAL.textPrimary },
+  optionTextDisabled: { color: NEUTRAL.textMuted },
   optionMeta: { fontSize: 11, color: NEUTRAL.textMuted },
   emptyText: { fontSize: 12.5, color: NEUTRAL.textMuted, textAlign: "center", paddingVertical: 20 },
   closeBtn: { paddingVertical: 12, alignItems: "center", marginTop: 4 },

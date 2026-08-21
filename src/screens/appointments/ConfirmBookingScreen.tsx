@@ -18,7 +18,7 @@ import { CheckCircle2 } from "lucide-react-native";
 
 const PAYMENT_OPTIONS = [
   { value: "pay_at_desk", label: "Pay at the front desk" },
-  { value: "pay_online", label: "Pay online" },
+  { value: "pay_online", label: "Pay online", meta: "Coming soon", disabled: true },
 ];
 
 // This screen exists specifically so booking a slot is never one tap —
