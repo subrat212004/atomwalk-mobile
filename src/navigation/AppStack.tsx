@@ -19,6 +19,12 @@ import { HealthTimelineScreen } from "@/screens/health/HealthTimelineScreen";
 import { HealthVisitsScreen } from "@/screens/health/HealthVisitsScreen";
 import { GrowthScreen } from "@/screens/health/GrowthScreen";
 import { AddFamilyMemberScreen } from "@/screens/health/AddFamilyMemberScreen";
+import { PersonalDetailsScreen } from "@/screens/profile/PersonalDetailsScreen";
+import { HealthSummaryScreen } from "@/screens/profile/HealthSummaryScreen";
+import { FamilyMembersScreen } from "@/screens/profile/FamilyMembersScreen";
+import { LinkedHospitalsScreen } from "@/screens/profile/LinkedHospitalsScreen";
+import { ThemeScreen } from "@/screens/profile/ThemeScreen";
+import { SupportScreen } from "@/screens/profile/SupportScreen";
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
@@ -48,6 +54,12 @@ export function AppStack() {
       <Stack.Screen name="HealthVisits" component={HealthVisitsScreen} />
       <Stack.Screen name="Growth" component={GrowthScreen} />
       <Stack.Screen name="AddFamilyMember" component={AddFamilyMemberScreen} />
+      <Stack.Screen name="PersonalDetails" component={PersonalDetailsScreen} />
+      <Stack.Screen name="HealthSummary" component={HealthSummaryScreen} />
+      <Stack.Screen name="FamilyMembers" component={FamilyMembersScreen} />
+      <Stack.Screen name="LinkedHospitals" component={LinkedHospitalsScreen} />
+      <Stack.Screen name="ThemePicker" component={ThemeScreen} />
+      <Stack.Screen name="Support" component={SupportScreen} />
     </Stack.Navigator>
   );
 }

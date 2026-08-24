@@ -72,4 +72,10 @@ export type AppStackParamList = {
   HealthVisits: { patientAwpid?: string; patientName: string };
   Growth: { patientAwpid?: string; patientName: string };
   AddFamilyMember: undefined;
+  PersonalDetails: undefined;
+  HealthSummary: undefined;
+  FamilyMembers: undefined;
+  LinkedHospitals: undefined;
+  ThemePicker: undefined;
+  Support: undefined;
 };

@@ -16,6 +16,8 @@ export function ListRow({
   pillLabel,
   pillTone = "neutral",
   onPress,
+  iconColors,
+  iconShadowColor,
 }: {
   icon: LucideIcon;
   title: string;
@@ -23,10 +25,13 @@ export function ListRow({
   pillLabel?: string;
   pillTone?: Tone;
   onPress: () => void;
+  /** Overrides IconBadge's default green gradient — e.g. giving each row in a grouped list its own category color. */
+  iconColors?: readonly [string, string, string];
+  iconShadowColor?: string;
 }) {
   return (
     <Pressable onPress={onPress} style={styles.row}>
-      <IconBadge icon={icon} size={30} />
+      <IconBadge icon={icon} size={30} colors={iconColors} shadowColor={iconShadowColor} />
       <View style={styles.mid}>
         <Text style={styles.title} numberOfLines={1}>
           {title}

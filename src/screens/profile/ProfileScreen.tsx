@@ -2,17 +2,14 @@ import React, { useCallback, useState } from "react";
 import { View, Text, StyleSheet, Pressable, Image, Modal } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Camera } from "lucide-react-native";
+import { Camera, IdCard, HeartPulse, Users, Building2, Palette, Headphones, Droplet, AlertTriangle } from "lucide-react-native";
 import { Screen, ErrorBanner, SectionTitle } from "@/components/Layout";
-import { Card } from "@/components/Card";
 import { Pill } from "@/components/Pill";
-import { SecondaryButton, PrimaryButton } from "@/components/Buttons";
-import { TextField } from "@/components/TextField";
-import { DateField } from "@/components/DateField";
-import { SelectField } from "@/components/SelectField";
+import { SecondaryButton } from "@/components/Buttons";
 import { MetalHero } from "@/components/MetalHero";
+import { ListRow } from "@/components/ListRow";
+import { GADGET_TINTS, DASHBOARD_TINTS } from "@/components/GadgetCard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { GENDER_OPTIONS, RELATIONSHIP_OPTIONS } from "@/constants/options";
 import { NEUTRAL } from "@/theme/themes";
 import { useAppTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
@@ -24,14 +21,13 @@ import { AppStackParamList } from "@/navigation/types";
 
 export function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
-  const { theme, allThemes, setThemeKey } = useAppTheme();
+  const { theme } = useAppTheme();
   const { logout } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [summary, setSummary] = useState<HealthSummary | null>(null);
   const [family, setFamily] = useState<FamilyMember[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState(false);
   const [showPhotoSheet, setShowPhotoSheet] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [signOutConfirmVisible, setSignOutConfirmVisible] = useState(false);
@@ -97,6 +93,8 @@ export function ProfileScreen() {
     }
   };
 
+  const allergyCount = summary?.active_allergies.length ?? 0;
+
   return (
     <Screen onRefresh={load} refreshing={loading}>
       {profile && (
@@ -150,134 +148,79 @@ export function ProfileScreen() {
 
       {!!error && <ErrorBanner message={error} onRetry={load} />}
 
-      {profile && !editing && (
-        <Card>
-          <View style={styles.rowBetween}>
-            <SectionTitle>Personal details</SectionTitle>
-            <Pressable onPress={() => setEditing(true)}>
-              <Text style={[styles.editLink, { color: theme.text }]}>Edit</Text>
-            </Pressable>
-          </View>
-          <Row label="Mobile" value={profile.mobile} />
-          <Row label="Email" value={profile.email || "Not set"} />
-          <Row label="Gender" value={genderLabel(profile.gender) || "Not set"} />
-          <Row label="Date of birth" value={profile.date_of_birth || "Not set"} />
-        </Card>
-      )}
-
-      {profile && editing && (
-        <EditProfileForm
-          profile={profile}
-          onSaved={(updated) => {
-            setProfile(updated);
-            setEditing(false);
-          }}
-          onCancel={() => setEditing(false)}
-        />
-      )}
-
       {summary && (
-        <>
-          <SectionTitle>Health summary</SectionTitle>
-          <View style={styles.summaryRow}>
-            <Card style={styles.summaryTile}>
-              <Text style={styles.summaryLabel}>BLOOD GROUP</Text>
-              <Text style={[styles.summaryValue, { color: NEUTRAL.danger }]}>{summary.blood_group || "Not recorded"}</Text>
-            </Card>
-            <Card style={styles.summaryTile}>
-              <Text style={styles.summaryLabel}>ALLERGIES</Text>
-              <Text style={styles.summaryValue}>{summary.active_allergies.length ? summary.active_allergies.map((a) => a.substance).join(", ") : "None reported"}</Text>
-            </Card>
+        <View style={styles.statCard}>
+          <View style={styles.statCol}>
+            <Droplet size={16} color={NEUTRAL.danger} strokeWidth={2.2} />
+            <Text style={styles.statLabel}>Blood group</Text>
+            <Text style={[styles.statValue, { color: NEUTRAL.danger }]}>{summary.blood_group || "Not set"}</Text>
           </View>
-          {summary.active_diagnoses.length > 0 && (
-            <Card>
-              <Text style={styles.summaryLabel}>ACTIVE DIAGNOSES</Text>
-              <View style={styles.diagWrap}>
-                {summary.active_diagnoses.map((d, i) => (
-                  <View key={i} style={styles.diagPill}>
-                    <Text style={styles.diagText}>{d.description}</Text>
-                  </View>
-                ))}
-              </View>
-            </Card>
-          )}
-        </>
-      )}
-
-      <View style={styles.rowBetween}>
-        <SectionTitle>Family members</SectionTitle>
-        <Pressable onPress={() => navigation.navigate("AddFamilyMember")}>
-          <Text style={[styles.editLink, { color: theme.text }]}>+ Add</Text>
-        </Pressable>
-      </View>
-      {family.length === 0 ? (
-        <Card>
-          <Text style={styles.emMeta}>No family members added yet.</Text>
-        </Card>
-      ) : (
-        family.map((f, i) => (
-          <Card key={i}>
-            <Text style={styles.hospitalName}>{f.full_name}</Text>
-            <Text style={styles.emMeta}>
-              {relationshipLabel(f.relationship) || "Family member"}
-              {f.date_of_birth ? ` · Born ${f.date_of_birth}` : ""}
-            </Text>
-          </Card>
-        ))
-      )}
-
-      {profile && (profile.emergency_contact_name || profile.emergency_contact_phone) ? (
-        <>
-          <SectionTitle>Emergency contact</SectionTitle>
-          <Card>
-            <Text style={styles.emName}>{profile.emergency_contact_name}</Text>
-            <Text style={styles.emMeta}>
-              {profile.emergency_contact_relation} · {profile.emergency_contact_phone}
-            </Text>
-          </Card>
-        </>
-      ) : null}
-
-      {summary && summary.linked_hospitals.length > 0 && (
-        <>
-          <SectionTitle>Linked hospitals</SectionTitle>
-          {summary.linked_hospitals.map((h, i) => (
-            <Card key={i}>
-              <View style={styles.rowBetween}>
-                <Text style={styles.hospitalName}>{h.hospital_name}</Text>
-                <Text style={styles.hospitalDate}>{h.last_visit}</Text>
-              </View>
-            </Card>
-          ))}
-        </>
-      )}
-
-      <SectionTitle>Color theme</SectionTitle>
-      <Card>
-        <View style={styles.swatchRow}>
-          {allThemes.map((t) => (
-            <Pressable
-              key={t.key}
-              onPress={() => setThemeKey(t.key)}
-              style={[styles.swatch, { backgroundColor: t.fill, borderColor: t.key === theme.key ? NEUTRAL.textPrimary : "transparent" }]}
-            />
-          ))}
+          <View style={[styles.statCol, styles.statBorder]}>
+            <AlertTriangle size={16} color="#993556" strokeWidth={2.2} />
+            <Text style={styles.statLabel}>Allergies</Text>
+            <Text style={styles.statValue}>{allergyCount ? `${allergyCount} known` : "None"}</Text>
+          </View>
+          <View style={styles.statCol}>
+            <Users size={16} color="#0C447C" strokeWidth={2.2} />
+            <Text style={styles.statLabel}>Family</Text>
+            <Text style={styles.statValue}>{family.length}</Text>
+          </View>
         </View>
-      </Card>
+      )}
 
-      <SectionTitle>Need help?</SectionTitle>
-      <Card>
-        <Text style={styles.supportText}>
-          For questions about your records, appointments, or anything that doesn't look right in the app, contact{" "}
-          <Text style={{ fontWeight: "700" }}>support@atomwalk.com</Text>.
-        </Text>
-        <Text style={styles.supportNote}>
-          In a medical emergency, call your local emergency number or go to the nearest hospital directly — do not
-          wait for a reply here.
-        </Text>
-      </Card>
+      <SectionTitle>Account</SectionTitle>
+      <ListRow
+        icon={IdCard}
+        title="Personal details"
+        subtitle="Mobile, email, gender, DOB"
+        onPress={() => navigation.navigate("PersonalDetails")}
+        iconColors={GADGET_TINTS.green.icon}
+        iconShadowColor={GADGET_TINTS.green.shadow}
+      />
+      <ListRow
+        icon={HeartPulse}
+        title="Health summary"
+        subtitle="Blood group, allergies, diagnoses"
+        onPress={() => navigation.navigate("HealthSummary")}
+        iconColors={DASHBOARD_TINTS.rose.icon}
+        iconShadowColor={DASHBOARD_TINTS.rose.shadow}
+      />
+      <ListRow
+        icon={Users}
+        title="Family members"
+        subtitle={family.length ? family.map((f) => f.full_name).join(", ") : "No family members added yet"}
+        pillLabel={family.length ? String(family.length) : undefined}
+        onPress={() => navigation.navigate("FamilyMembers")}
+        iconColors={GADGET_TINTS.blue.icon}
+        iconShadowColor={GADGET_TINTS.blue.shadow}
+      />
+      <ListRow
+        icon={Building2}
+        title="Linked hospitals"
+        subtitle={summary?.linked_hospitals.length ? summary.linked_hospitals.map((h) => h.hospital_name).join(", ") : "No hospitals linked yet"}
+        onPress={() => navigation.navigate("LinkedHospitals")}
+        iconColors={GADGET_TINTS.amber.icon}
+        iconShadowColor={GADGET_TINTS.amber.shadow}
+      />
 
-      <SecondaryButton label="Sign out" onPress={() => setSignOutConfirmVisible(true)} danger style={{ marginTop: 6 }} />
+      <SectionTitle>Preferences</SectionTitle>
+      <ListRow
+        icon={Palette}
+        title="Theme"
+        subtitle={theme.label}
+        onPress={() => navigation.navigate("ThemePicker")}
+        iconColors={GADGET_TINTS.purple.icon}
+        iconShadowColor={GADGET_TINTS.purple.shadow}
+      />
+      <ListRow
+        icon={Headphones}
+        title="Support"
+        onPress={() => navigation.navigate("Support")}
+        iconColors={GADGET_TINTS.muted.icon}
+        iconShadowColor={GADGET_TINTS.muted.shadow}
+      />
+
+      <SecondaryButton label="Sign out" onPress={() => setSignOutConfirmVisible(true)} danger style={{ marginTop: 10 }} />
 
       <ConfirmDialog
         visible={signOutConfirmVisible}
@@ -294,80 +237,8 @@ export function ProfileScreen() {
   );
 }
 
-function EditProfileForm({ profile, onSaved, onCancel }: { profile: Profile; onSaved: (p: Profile) => void; onCancel: () => void }) {
-  const [fullName, setFullName] = useState(profile.full_name);
-  const [mobile, setMobile] = useState(profile.mobile);
-  const [gender, setGender] = useState(profile.gender);
-  const [dob, setDob] = useState(profile.date_of_birth || "");
-  const [emName, setEmName] = useState(profile.emergency_contact_name);
-  const [emPhone, setEmPhone] = useState(profile.emergency_contact_phone);
-  const [emRelation, setEmRelation] = useState(profile.emergency_contact_relation);
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const onSave = async () => {
-    if (!fullName.trim()) {
-      setError("Name cannot be blank.");
-      return;
-    }
-    setError("");
-    setSaving(true);
-    try {
-      const updated = await updateProfile({
-        full_name: fullName.trim(),
-        mobile: mobile.trim(),
-        gender: gender.trim(),
-        date_of_birth: dob.trim() || undefined,
-        emergency_contact_name: emName.trim(),
-        emergency_contact_phone: emPhone.trim(),
-        emergency_contact_relation: emRelation.trim(),
-      });
-      onSaved(updated);
-    } catch (err) {
-      setError(apiErrorMessage(err));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Card>
-      <SectionTitle>Edit personal details</SectionTitle>
-      {!!error && <ErrorBanner message={error} />}
-      <TextField label="Full name" value={fullName} onChangeText={setFullName} />
-      <TextField label="Mobile number" value={mobile} onChangeText={setMobile} keyboardType="number-pad" maxLength={10} />
-      <SelectField label="Gender" value={gender} options={GENDER_OPTIONS} onChange={setGender} />
-      <DateField label="Date of birth" value={dob} onChange={setDob} maximumDate={new Date()} />
-      <TextField label="Emergency contact name" value={emName} onChangeText={setEmName} />
-      <TextField label="Emergency contact phone" value={emPhone} onChangeText={setEmPhone} keyboardType="number-pad" maxLength={10} />
-      <TextField label="Emergency contact relation" value={emRelation} onChangeText={setEmRelation} />
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        <SecondaryButton label="Cancel" onPress={onCancel} style={{ flex: 1 }} />
-        <PrimaryButton label="Save changes" onPress={onSave} loading={saving} style={{ flex: 1 }} />
-      </View>
-    </Card>
-  );
-}
-
-function genderLabel(value: string): string {
-  return GENDER_OPTIONS.find((o) => o.value === value)?.label || value;
-}
-
-function relationshipLabel(value: string): string {
-  return RELATIONSHIP_OPTIONS.find((o) => o.value === value)?.label || value;
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.rowBetween2}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  hero: { marginBottom: 16 },
+  hero: { marginBottom: 28 },
   heroContent: { alignItems: "center", paddingVertical: 4 },
   avwrap: { position: "relative", marginBottom: 8 },
   avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: "rgba(255,255,255,0.25)", alignItems: "center", justifyContent: "center", overflow: "hidden" },
@@ -396,24 +267,21 @@ const styles = StyleSheet.create({
   sheetCancelText: { fontSize: 13, color: NEUTRAL.textSecondary, fontWeight: "600" },
   name: { fontWeight: "600", fontSize: 15, marginTop: 8, color: "#FFFFFF" },
   awpid: { fontSize: 11, color: "#EAF3DE", marginTop: 2 },
-  editLink: { fontSize: 12, fontWeight: "600" },
-  supportText: { fontSize: 12, color: NEUTRAL.textSecondary, lineHeight: 18 },
-  supportNote: { fontSize: 11, color: NEUTRAL.textMuted, lineHeight: 16, marginTop: 8 },
-  rowBetween2: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
-  rowLabel: { fontSize: 11, color: NEUTRAL.textMuted },
-  rowValue: { fontSize: 12.5, color: NEUTRAL.textPrimary },
-  summaryRow: { flexDirection: "row", gap: 8 },
-  summaryTile: { flex: 1 },
-  summaryLabel: { fontSize: 9.5, color: NEUTRAL.textMuted, marginBottom: 4 },
-  summaryValue: { fontSize: 12.5, fontWeight: "600", color: NEUTRAL.textPrimary },
-  diagWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 6 },
-  diagPill: { backgroundColor: NEUTRAL.surfaceAlt, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
-  diagText: { fontSize: 11, color: NEUTRAL.textPrimary },
-  emName: { fontSize: 13, fontWeight: "600", color: NEUTRAL.textPrimary },
-  emMeta: { fontSize: 11.5, color: NEUTRAL.textSecondary, marginTop: 3 },
-  rowBetween: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  hospitalName: { fontSize: 12.5, fontWeight: "600", color: NEUTRAL.textPrimary },
-  hospitalDate: { fontSize: 11, color: NEUTRAL.textMuted },
-  swatchRow: { flexDirection: "row", gap: 10 },
-  swatch: { width: 28, height: 28, borderRadius: 14, borderWidth: 2 },
+  statCard: {
+    flexDirection: "row",
+    backgroundColor: NEUTRAL.surface,
+    borderRadius: 16,
+    marginTop: -34,
+    marginBottom: 18,
+    paddingVertical: 12,
+    shadowColor: "#0f2819",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  statCol: { flex: 1, alignItems: "center" },
+  statBorder: { borderLeftWidth: 0.5, borderRightWidth: 0.5, borderColor: NEUTRAL.border },
+  statLabel: { fontSize: 9, color: NEUTRAL.textMuted, marginTop: 3 },
+  statValue: { fontSize: 11.5, fontWeight: "600", color: NEUTRAL.textPrimary, marginTop: 1 },
 });
