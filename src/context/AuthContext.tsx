@@ -7,6 +7,8 @@ interface AuthContextValue {
   isLoading: boolean; // true only during the initial "do we have a saved session" check
   isAuthenticated: boolean;
   login: (mobile: string, password: string) => Promise<void>;
+  /** Completes sign-in with a JWT pair already issued elsewhere — used by the passwordless OTP login flow, which gets tokens directly from /auth/login/patient/otp/ instead of loginPatient. */
+  loginWithTokens: (access: string, refresh: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -44,6 +46,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(true);
   }, []);
 
+  const loginWithTokens = useCallback(async (access: string, refresh: string) => {
+    await saveTokens(access, refresh);
+    setIsAuthenticated(true);
+  }, []);
+
   const logout = useCallback(async () => {
     const refresh = await getRefreshToken();
     try {
@@ -56,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoading, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isLoading, isAuthenticated, login, loginWithTokens, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -76,7 +76,15 @@ export function LoginScreen() {
           error={errors.password}
         />
 
+        <Pressable onPress={() => navigation.navigate("ForgotPassword")} style={styles.forgotWrap}>
+          <Text style={[styles.forgot, { color: theme.text }]}>Forgot password?</Text>
+        </Pressable>
+
         <PrimaryButton label="Sign in" onPress={onSubmit} loading={loading} style={{ marginTop: 6 }} />
+
+        <Pressable onPress={() => navigation.navigate("OTPLogin")} style={styles.otpLoginWrap}>
+          <Text style={[styles.otpLoginText, { color: theme.text }]}>Sign in with a code instead</Text>
+        </Pressable>
 
         <Pressable onPress={() => navigation.navigate("Register")} style={styles.footerWrap}>
           <Text style={styles.footer}>
@@ -98,6 +106,8 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 12.5, color: NEUTRAL.textSecondary, marginTop: 4, textAlign: "center" },
   forgotWrap: { alignSelf: "flex-end", marginBottom: 18, marginTop: -6 },
   forgot: { fontSize: 12.5, color: NEUTRAL.textSecondary, fontWeight: "600" },
+  otpLoginWrap: { alignSelf: "center", marginTop: 14 },
+  otpLoginText: { fontSize: 12.5, fontWeight: "600" },
   footerWrap: { alignSelf: "center", marginTop: 18 },
   footer: { fontSize: 12.5, color: NEUTRAL.textSecondary },
   footerLink: { fontWeight: "600" },

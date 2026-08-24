@@ -1,6 +1,8 @@
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
+  ForgotPassword: undefined;
+  OTPLogin: undefined;
 };
 
 export type AppTabsParamList = {
@@ -34,6 +36,7 @@ export type AppStackParamList = {
     chiefComplaint?: string;
     patientAwpid?: string;
     patientName: string;
+    consultationFee?: string | null;
   };
   BookingSuccess: { hospital: string; doctor: string; date: string; time?: string; tokenNumber: number };
   PaymentPending: {
