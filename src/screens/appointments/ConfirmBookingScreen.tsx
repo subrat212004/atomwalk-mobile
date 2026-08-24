@@ -131,6 +131,12 @@ export function ConfirmBookingScreen() {
           {params.date}
           {params.time ? ` · ${params.time}` : " · next available token"} · for {params.patientName}
         </Text>
+        {!!params.consultationFee && (
+          <View style={styles.feeRow}>
+            <Text style={styles.feeLabel}>Consultation fee</Text>
+            <Text style={[styles.feeValue, { color: theme.text }]}>₹{params.consultationFee}</Text>
+          </View>
+        )}
       </Card>
 
       <SectionTitle>Reason for visit (optional)</SectionTitle>
@@ -172,6 +178,17 @@ const styles = StyleSheet.create({
   doctor: { fontSize: 13.5, fontWeight: "600", color: NEUTRAL.textPrimary },
   hospital: { fontSize: 12, color: NEUTRAL.textSecondary, marginTop: 3 },
   dateLine: { fontSize: 12.5, fontWeight: "600", marginTop: 8 },
+  feeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: NEUTRAL.border,
+  },
+  feeLabel: { fontSize: 11, fontWeight: "600", color: NEUTRAL.textSecondary },
+  feeValue: { fontSize: 17, fontWeight: "800" },
   consentMsg: { fontSize: 13, color: NEUTRAL.textPrimary, marginBottom: 14, lineHeight: 19 },
   consentItem: { fontSize: 12.5, color: NEUTRAL.textSecondary, marginBottom: 4 },
 });
