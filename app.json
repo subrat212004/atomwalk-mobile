@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "AW360 Patient",
+    "name": "HealthNet",
     "slug": "atomwalk-patient-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",
@@ -13,7 +14,10 @@
     "android": {
       "package": "com.atomwalk.patient",
       "adaptiveIcon": {
-        "backgroundColor": "#0F4A3A"
+        "backgroundColor": "#0F4A3A",
+        "backgroundImage": "./assets/adaptive-icon-background.png",
+        "foregroundImage": "./assets/adaptive-icon-foreground.png",
+        "monochromeImage": "./assets/adaptive-icon-monochrome.png"
       }
     },
     "extra": {
