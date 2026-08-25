@@ -2,9 +2,9 @@ import React, { useCallback, useState } from "react";
 import { Pressable, Text, StyleSheet } from "react-native";
 import { useFocusEffect, useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Upload } from "lucide-react-native";
 import { Screen, BackHeader, ErrorBanner } from "@/components/Layout";
 import { LabOrdersList } from "@/components/LabOrdersList";
-import { NEUTRAL } from "@/theme/themes";
 import { useAppTheme } from "@/context/ThemeContext";
 import { getLabOrders, chooseLabOrder } from "@/api/portal";
 import { apiErrorMessage } from "@/api/client";
@@ -57,8 +57,12 @@ export function LabReportsScreen() {
     <Screen onRefresh={load} refreshing={loading}>
       <BackHeader title={patientName ? `Lab reports — ${patientName}` : "Lab reports"} onBack={() => navigation.goBack()} />
 
-      <Pressable onPress={() => navigation.navigate("Documents")} style={styles.uploadLink}>
-        <Text style={[styles.uploadLinkText, { color: theme.text }]}>Got a report from outside? Upload it manually →</Text>
+      <Pressable
+        onPress={() => navigation.navigate("Documents")}
+        style={[styles.uploadPill, { backgroundColor: theme.bg }]}
+      >
+        <Upload size={15} color={theme.text} strokeWidth={2.3} />
+        <Text style={[styles.uploadPillText, { color: theme.text }]}>Upload outside report</Text>
       </Pressable>
 
       {!!error && <ErrorBanner message={error} onRetry={load} />}
@@ -74,6 +78,15 @@ export function LabReportsScreen() {
 }
 
 const styles = StyleSheet.create({
-  uploadLink: { backgroundColor: NEUTRAL.surfaceAlt, borderRadius: 10, padding: 12, marginBottom: 12 },
-  uploadLinkText: { fontSize: 12, fontWeight: "600" },
+  uploadPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 8,
+    borderRadius: 20,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    marginBottom: 14,
+  },
+  uploadPillText: { fontSize: 12.5, fontWeight: "600" },
 });

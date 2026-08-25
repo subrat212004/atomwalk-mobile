@@ -37,6 +37,7 @@ function timeAgo(dateStr: string): string {
 // Mirrors the backend's own rules (apps/patients/portal_views.py) so the
 // buttons only ever appear when the action would actually succeed.
 const CANCELLABLE_STATUSES = ["scheduled", "waiting", "vitals_done"];
+const RESCHEDULABLE_STATUSES = ["scheduled", "waiting"];
 
 type Nav = CompositeNavigationProp<
   BottomTabNavigationProp<AppTabsParamList, "Appointments">,
@@ -154,9 +155,25 @@ export function AppointmentsScreen() {
                       </Text>
                     </View>
                   </View>
-                  {rx && (
+                  {(rx || b.doctor_id != null) && (
                     <View style={styles.compactActionsRow}>
-                      <SecondaryButton label="View prescription" compact onPress={() => navigation.navigate("PrescriptionDetail", { record: rx })} />
+                      {rx && (
+                        <SecondaryButton label="View prescription" compact onPress={() => navigation.navigate("PrescriptionDetail", { record: rx })} />
+                      )}
+                      {b.doctor_id != null && (
+                        <SecondaryButton
+                          label="Book follow-up"
+                          compact
+                          onPress={() =>
+                            navigation.navigate("DoctorDetail", {
+                              tenantId: b.tenant_id,
+                              doctorId: b.doctor_id!,
+                              patientAwpid: b.patient_awpid || undefined,
+                              patientName: b.patient_name || undefined,
+                            })
+                          }
+                        />
+                      )}
                     </View>
                   )}
                 </Card>
@@ -195,9 +212,28 @@ export function AppointmentsScreen() {
                     PortalCancelBookingView) — the control is removed here
                     entirely rather than left clickable and failing with a
                     server error. */}
-                {!isPaid && CANCELLABLE_STATUSES.includes(b.status) && (
+                {((RESCHEDULABLE_STATUSES.includes(b.status) && b.doctor_id != null) ||
+                  (!isPaid && CANCELLABLE_STATUSES.includes(b.status))) && (
                   <View style={styles.compactActionsRow}>
-                    <SecondaryButton label="Cancel" danger compact onPress={() => onCancel(b)} loading={cancellingId === b.id} />
+                    {RESCHEDULABLE_STATUSES.includes(b.status) && b.doctor_id != null && (
+                      <SecondaryButton
+                        label="Reschedule"
+                        compact
+                        onPress={() =>
+                          navigation.navigate("Reschedule", {
+                            bookingId: b.id,
+                            tenantId: b.tenant_id,
+                            doctorId: b.doctor_id!,
+                            doctorName: b.doctor,
+                            hospitalName: b.hospital,
+                            patientName: b.patient_name || "You",
+                          })
+                        }
+                      />
+                    )}
+                    {!isPaid && CANCELLABLE_STATUSES.includes(b.status) && (
+                      <SecondaryButton label="Cancel" danger compact onPress={() => onCancel(b)} loading={cancellingId === b.id} />
+                    )}
                   </View>
                 )}
                 {isPaid && (
