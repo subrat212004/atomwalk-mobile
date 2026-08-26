@@ -4,7 +4,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { CompositeNavigationProp } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { CalendarDays, ClipboardList, HeartPulse, Pill as PillIcon, FlaskConical, Bell, ChevronRight } from "lucide-react-native";
+import { CalendarDays, ClipboardList, HeartPulse, Pill as PillIcon, FlaskConical, Bell, ChevronRight, Users, X } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Screen, ErrorBanner } from "@/components/Layout";
 import { Card } from "@/components/Card";
@@ -23,6 +23,13 @@ import { Booking } from "@/api/types";
 import { AppStackParamList } from "@/navigation/types";
 import { AppTabsParamList } from "@/navigation/types";
 import { useExitOnDoubleBack } from "@/utils/useExitOnDoubleBack";
+import { getHomeChecklistDismissed, setHomeChecklistDismissed } from "@/utils/storage";
+
+const GET_STARTED_ITEMS: { key: string; label: string; icon: LucideIcon }[] = [
+  { key: "book", label: "Book your first appointment", icon: CalendarDays },
+  { key: "family", label: "Add a family member", icon: Users },
+  { key: "health", label: "Complete your health profile", icon: HeartPulse },
+];
 
 type Nav = CompositeNavigationProp<
   BottomTabNavigationProp<AppTabsParamList, "Home">,
@@ -59,6 +66,7 @@ export function HomeScreen() {
   const [firstName, setFirstName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [checklistDismissed, setChecklistDismissed] = useState(true);
   // Recomputed every minute so "Good morning"/the date roll over on their
   // own while the app is sitting open, not just on the next full reload.
   const [now, setNow] = useState(new Date());
@@ -92,6 +100,7 @@ export function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
+      getHomeChecklistDismissed().then(setChecklistDismissed);
     }, [load])
   );
 
@@ -101,7 +110,17 @@ export function HomeScreen() {
     else if (key === "prescriptions") navigation.navigate("Prescriptions");
     else if (key === "labs") navigation.navigate("LabReports");
   };
-  const onBookVisit = () => navigation.navigate("FindDoctors", undefined);
+  const onBookVisit = () => navigation.navigate("BookingFor", undefined);
+
+  const onDismissChecklist = () => {
+    setChecklistDismissed(true);
+    setHomeChecklistDismissed();
+  };
+  const onChecklistItem = (key: string) => {
+    if (key === "book") onBookVisit();
+    else if (key === "family") navigation.navigate("FamilyMembers");
+    else if (key === "health") navigation.navigate("HealthSummary");
+  };
 
   const nextUp = upcoming[0];
   // "Your bookings" used to show the next 2 upcoming appointments regardless
@@ -183,6 +202,33 @@ export function HomeScreen() {
           <ChevronRight size={16} color="#FFFFFF" strokeWidth={2.4} />
         </View>
       </Pressable>
+
+      {!checklistDismissed && !loading && upcoming.length === 0 && (
+        <Card style={styles.checklistCard}>
+          <View style={styles.checklistHeader}>
+            <Text style={styles.checklistTitle}>Get started</Text>
+            <Pressable onPress={onDismissChecklist} hitSlop={8}>
+              <X size={15} color={NEUTRAL.textMuted} strokeWidth={2.2} />
+            </Pressable>
+          </View>
+          {GET_STARTED_ITEMS.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <Pressable
+                key={item.key}
+                onPress={() => onChecklistItem(item.key)}
+                style={[styles.checklistItem, i > 0 && styles.checklistItemBorder]}
+              >
+                <View style={[styles.checklistDot, { backgroundColor: theme.bg }]}>
+                  <Icon size={13} color={theme.text} strokeWidth={2.2} />
+                </View>
+                <Text style={styles.checklistText}>{item.label}</Text>
+                <ChevronRight size={15} color={NEUTRAL.textMuted} strokeWidth={2.2} />
+              </Pressable>
+            );
+          })}
+        </Card>
+      )}
 
       <Text style={styles.sectionTitle}>Quick access</Text>
       <View style={styles.grid}>
@@ -293,6 +339,13 @@ const styles = StyleSheet.create({
   bookSub: { fontSize: 11, color: "rgba(255,255,255,0.82)", marginTop: 2 },
   bookArrow: { width: 30, height: 30, borderRadius: 15, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
   remChev: { fontSize: 18, color: NEUTRAL.textMuted },
+  checklistCard: { marginBottom: 16 },
+  checklistHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 },
+  checklistTitle: { fontSize: 11, fontWeight: "700", color: NEUTRAL.textSecondary, textTransform: "uppercase", letterSpacing: 0.3 },
+  checklistItem: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 },
+  checklistItemBorder: { borderTopWidth: 0.5, borderTopColor: NEUTRAL.border },
+  checklistDot: { width: 26, height: 26, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  checklistText: { flex: 1, fontSize: 12.5, fontWeight: "600", color: NEUTRAL.textPrimary },
   sectionTitle: { fontSize: 12, fontWeight: "600", color: NEUTRAL.textSecondary, marginBottom: 8, marginTop: 4 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 4 },
   qa: { width: "47%" },

@@ -1,4 +1,5 @@
 export type AuthStackParamList = {
+  Welcome: undefined;
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
@@ -25,6 +26,7 @@ export type AppStackParamList = {
       }
     | undefined;
   DoctorDetail: { tenantId: number; doctorId: number; initialComplaint?: string; patientAwpid?: string; patientName?: string };
+  BookingFor: { initialComplaint?: string } | undefined;
   ConfirmBooking: {
     tenantId: number;
     doctorId: number;

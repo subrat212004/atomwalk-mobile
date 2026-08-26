@@ -113,7 +113,7 @@ export function AppointmentsScreen() {
       <MetalHero compact curved style={styles.hero}>
         <Text style={styles.bannerTitle}>Find a doctor instantly</Text>
         <Text style={styles.bannerSub}>Book across every hospital on the platform</Text>
-        <Pressable onPress={() => navigation.navigate("FindDoctors", undefined)} style={styles.bannerBtn}>
+        <Pressable onPress={() => navigation.navigate("BookingFor", undefined)} style={styles.bannerBtn}>
           <Text style={[styles.bannerBtnText, { color: theme.text }]}>Book now</Text>
         </Pressable>
       </MetalHero>

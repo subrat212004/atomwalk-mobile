@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, StyleSheet, Pressable, Image, Modal } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image, Modal, Switch } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Camera, IdCard, HeartPulse, Users, Building2, Palette, Headphones, Droplet, AlertTriangle } from "lucide-react-native";
+import * as LocalAuthentication from "expo-local-authentication";
+import { Camera, IdCard, HeartPulse, Users, Building2, Palette, Headphones, Droplet, AlertTriangle, Lock } from "lucide-react-native";
 import { Screen, ErrorBanner, SectionTitle } from "@/components/Layout";
 import { Pill } from "@/components/Pill";
 import { SecondaryButton } from "@/components/Buttons";
@@ -16,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getProfile, getHealthSummary, getFamily, updateProfile } from "@/api/portal";
 import { apiErrorMessage } from "@/api/client";
 import { pickImage, pickImageFromCamera, fileToDataUri } from "@/utils/fileHelpers";
+import { getBiometricLockEnabled, setBiometricLockEnabled } from "@/utils/storage";
 import { Profile, HealthSummary, FamilyMember } from "@/api/types";
 import { AppStackParamList } from "@/navigation/types";
 
@@ -32,6 +34,8 @@ export function ProfileScreen() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [signOutConfirmVisible, setSignOutConfirmVisible] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricBusy, setBiometricBusy] = useState(false);
 
   const onSignOut = async () => {
     setSigningOut(true);
@@ -61,8 +65,33 @@ export function ProfileScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
+      getBiometricLockEnabled().then(setBiometricEnabled);
     }, [load])
   );
+
+  const onToggleBiometric = async (next: boolean) => {
+    setError("");
+    if (!next) {
+      setBiometricBusy(true);
+      await setBiometricLockEnabled(false);
+      setBiometricEnabled(false);
+      setBiometricBusy(false);
+      return;
+    }
+    setBiometricBusy(true);
+    try {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = hasHardware && (await LocalAuthentication.isEnrolledAsync());
+      if (!hasHardware || !isEnrolled) {
+        setError("Your phone doesn't have a fingerprint or face unlock set up yet — add one in your phone's Settings first.");
+        return;
+      }
+      await setBiometricLockEnabled(true);
+      setBiometricEnabled(true);
+    } finally {
+      setBiometricBusy(false);
+    }
+  };
 
   const onPickPhoto = async (source: "camera" | "gallery") => {
     setShowPhotoSheet(false);
@@ -204,6 +233,21 @@ export function ProfileScreen() {
       />
 
       <SectionTitle>Preferences</SectionTitle>
+      <ListRow
+        icon={Lock}
+        title="Biometric unlock"
+        subtitle={biometricEnabled ? "On — using your phone's fingerprint or face unlock" : "Off — sign in with your password each time"}
+        iconColors={GADGET_TINTS.green.icon}
+        iconShadowColor={GADGET_TINTS.green.shadow}
+        trailing={
+          <Switch
+            value={biometricEnabled}
+            onValueChange={onToggleBiometric}
+            disabled={biometricBusy}
+            trackColor={{ true: theme.fill }}
+          />
+        }
+      />
       <ListRow
         icon={Palette}
         title="Theme"

@@ -4,6 +4,7 @@ import { AppStackParamList } from "./types";
 import { AppTabs } from "./AppTabs";
 import { FindDoctorsScreen } from "@/screens/appointments/FindDoctorsScreen";
 import { DoctorDetailScreen } from "@/screens/appointments/DoctorDetailScreen";
+import { BookingForScreen } from "@/screens/appointments/BookingForScreen";
 import { ConfirmBookingScreen } from "@/screens/appointments/ConfirmBookingScreen";
 import { BookingSuccessScreen } from "@/screens/appointments/BookingSuccessScreen";
 import { PaymentPendingScreen } from "@/screens/appointments/PaymentPendingScreen";
@@ -39,6 +40,7 @@ export function AppStack() {
       <Stack.Screen name="Tabs" component={AppTabs} />
       <Stack.Screen name="FindDoctors" component={FindDoctorsScreen} />
       <Stack.Screen name="DoctorDetail" component={DoctorDetailScreen} />
+      <Stack.Screen name="BookingFor" component={BookingForScreen} />
       <Stack.Screen name="ConfirmBooking" component={ConfirmBookingScreen} />
       <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} options={{ gestureEnabled: false }} />
       <Stack.Screen name="PaymentPending" component={PaymentPendingScreen} options={{ gestureEnabled: false }} />

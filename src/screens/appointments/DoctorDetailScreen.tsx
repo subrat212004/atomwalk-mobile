@@ -188,6 +188,10 @@ export function DoctorDetailScreen() {
             disabled={!selectedTime}
             style={{ alignSelf: "stretch" }}
             onPress={() =>
+              // Who this booking is for was already decided one screen back
+              // (BookingForScreen, reached before this screen for a fresh
+              // booking) — patientAwpid/patientName just ride along from
+              // there, same as they already did for "Book follow-up".
               navigation.navigate("ConfirmBooking", {
                 tenantId,
                 doctorId,

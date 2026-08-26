@@ -18,16 +18,19 @@ export function ListRow({
   onPress,
   iconColors,
   iconShadowColor,
+  trailing,
 }: {
   icon: LucideIcon;
   title: string;
   subtitle?: string;
   pillLabel?: string;
   pillTone?: Tone;
-  onPress: () => void;
+  onPress?: () => void;
   /** Overrides IconBadge's default green gradient — e.g. giving each row in a grouped list its own category color. */
   iconColors?: readonly [string, string, string];
   iconShadowColor?: string;
+  /** Replaces the pill+chevron with a custom control (e.g. a Switch) — for a settings row that toggles in place instead of navigating. */
+  trailing?: React.ReactNode;
 }) {
   return (
     <Pressable onPress={onPress} style={styles.row}>
@@ -42,8 +45,14 @@ export function ListRow({
           </Text>
         )}
       </View>
-      {!!pillLabel && <Pill label={pillLabel} tone={pillTone} />}
-      <ChevronRight size={17} color={NEUTRAL.textMuted} strokeWidth={2.2} style={styles.chev} />
+      {trailing ? (
+        trailing
+      ) : (
+        <>
+          {!!pillLabel && <Pill label={pillLabel} tone={pillTone} />}
+          <ChevronRight size={17} color={NEUTRAL.textMuted} strokeWidth={2.2} style={styles.chev} />
+        </>
+      )}
     </Pressable>
   );
 }
